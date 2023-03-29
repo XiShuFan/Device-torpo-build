@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>echarts关系图</title>
+    <script type="text/javascript" src="echarts.min.js"></script>
+    <script type="text/javascript" src="jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <select id = "catalog" onchange="selectTorpo(this)">
+    </select>
+    <div id="main" style="width: 1200px;height:700px;align-content: center;"></div>
+    <script type="text/javascript">
+
+        $.getJSON("catalog.json", "", function (catalog) {
+            $.each(catalog.catalog, function(index, value) {
+                //用JS动态添加select的option
+                var op=document.createElement("option");      // 新建OPTION (op) 
+                op.setAttribute("value", value);          		// 设置OPTION的 VALUE 
+                op.appendChild(document.createTextNode(value)); // 设置OPTION的 TEXT
+                document.getElementById("catalog").appendChild(op);  // 为SELECT 新建一 OPTION(op)
+            })
+        });
+
+
+
+        function selectTorpo(choose) {
+            var chartDom = document.getElementById('main');
+            var myChart = echarts.init(chartDom);
+            var option = {};
+            myChart.showLoading();
+            $.getJSON(choose.value + ".json", function (torpoData) {
+                myChart.hideLoading();
+                option = {
+                    title: {
+                        text: '复用段示例 ' + choose.value,
+                        top: 'top',
+                        left: 'left'
+                    },
+                    tooltip: {},
+                    animationDurationUpdate: 1500,
+                    animationEasingUpdate: 'linear',
+                    legend: [{
+                        data: torpoData.categories.map(function (a) {
+                            return a.name;
+                        })
+                    }],
+                    series: [
+                        {
+                            type: 'graph',
+                            layout: 'none',
+                            symbolSize: 5,
+                            roam: true,
+                            label: {
+                                show: false
+                            },
+                            edgeSymbol: ['arrow'],
+                            edgeSymbolSize: [8],
+                            edgeLabel: {
+                                fontSize: 1
+                            },
+                            data: torpoData.nodes,
+                            links: torpoData.links,
+                            categories: torpoData.categories,
+                            lineStyle: {
+                                opacity: 0.4,
+                                width: 1,
+                                curveness: 0
+                            },
+                            emphasis: {
+                                focus: 'adjacency',
+                                lineStyle: {
+                                    width: 10
+                                }
+                            }
+                        }
+                    ]
+                };
+                myChart.clear();
+                option && myChart.setOption(option, true);
+            });
+        }
+        
+
+    </script>
+</body>
+</html>
